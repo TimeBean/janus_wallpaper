@@ -1,5 +1,5 @@
 {
-	"wallpaper_path": "/home/alex/Pictures/wallpapers",
+	"wallpaper_path": "/path/to/wallpaper/folder",
 	"debug": false,
 	"ui_scale_factor": 0.5,
 	"prefered_fetch_tool": "fastfetch"

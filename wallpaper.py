@@ -7,6 +7,7 @@ import math
 import random
 import mediafile
 import subprocess
+import shutil
 
 # <config.json>
 WALLPAPER_PATH = ""
@@ -98,9 +99,10 @@ def info_render():
 		previous_image_name = f"[ {previous_media.name} ]"
 
 	print()
-	print(previous_image_name.center(os.get_terminal_size().columns))
-	print(current_image_name.center(os.get_terminal_size().columns))
-	print(next_image_name.center(os.get_terminal_size().columns))
+	print(previous_image_name.center(os.get_terminal_size().columns)[:-14] + "q  " + colorama.Style.NORMAL)
+	print(current_image_name.center(os.get_terminal_size().columns)[:-14] + "w 󰆓 " + colorama.Style.NORMAL)
+	print(next_image_name.center(os.get_terminal_size().columns)[:-14] + "e  " + colorama.Style.NORMAL)
+	print("x 󰗽   ".rjust(os.get_terminal_size().columns))
 
 	return 2
 
