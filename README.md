@@ -6,7 +6,7 @@ Set photo and video as wallpaper and extract color via matugen and pywal.
 
 # Dependencies
 
-- pip3 install -r requirements
+- pip3 install -r requirements.txt
 - [chafa](https://github.com/hpjansson/chafa)
 - [matugen](https://github.com/InioX/matugen) (optional)
 - [pywal](https://github.com/dylanaraps/pywal) (optional)
