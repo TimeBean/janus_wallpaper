@@ -11,6 +11,7 @@ import shutil
 
 # <config.json>
 WALLPAPER_PATH = ""
+WAYBAR_COLORS_PATH = ""
 DEBUG = False
 PREFERED_FETCH_TOOL = ""
 UI_SCALE_FACTOR = 1
@@ -22,7 +23,7 @@ def get_wallpapers():
 	return glob.glob(WALLPAPER_PATH + "/*.png") + glob.glob(WALLPAPER_PATH + "/*.jpg")  + glob.glob(WALLPAPER_PATH + "/*.mp4") + glob.glob(WALLPAPER_PATH + "/*.mkv")
 
 def load_config():
-	global WALLPAPER_PATH, DEBUG, PREFERED_FETCH_TOOL, UI_SCALE_FACTOR
+	global WALLPAPER_PATH, DEBUG, PREFERED_FETCH_TOOL, UI_SCALE_FACTOR, WAYBAR_COLORS_PATH
 
 	configObject = json.load(open("config.json", "r"))
 
@@ -30,6 +31,7 @@ def load_config():
 	DEBUG = configObject["debug"]
 	PREFERED_FETCH_TOOL = configObject["prefered_fetch_tool"]
 	UI_SCALE_FACTOR = configObject["ui_scale_factor"]
+	WAYBAR_COLORS_PATH = configObject["waybar_colors_path"]
 
 def stuff_info_render():
 	print(colorama.Style.DIM + f"Jānus v2 ({hex(6825)[2:]})".center(os.get_terminal_size().columns) + colorama.Style.NORMAL)
@@ -51,21 +53,21 @@ def image_render():
 		d = float(subprocess.check_output([
             "ffprobe","-v","error",
             "-show_entries","format=duration",
-            "-of","default=noprint_wrappers=1:nokey=1", file
+            "-of","default=noprint_wrappers=1:nokey=1", media.full_path
         ], stderr=subprocess.DEVNULL).strip())
 
-		file_name = file[file.rfind("//"):]
+		file_name = media.full_path[media.full_path.rfind("//"):]
 
 		ts = f"{random.random() * d:.2f}"
 		subprocess.run([
             "ffmpeg","-ss", ts,
-            "-i", file,
+            "-i", media.full_path,
             "-frames:v","1",
             "-q:v","2",
             "temp.jpg"
         ])
-       
-		os.system(f"chafa \"temp.jpg\" --size {width}x{height} --align center")
+
+		os.system(f"chafa \"temp.jpg\" --size {image_width}x{image_height} --align center")
 		os.remove("temp.jpg")
 
 	else:
@@ -87,9 +89,9 @@ def info_render():
 	else:
 		previous_image_name = "[  ]"
 		next_image_name = "[  ]"
-	
+
 	current_image_name = ("{  " + media.name + "  }")
-	
+
 	if (CURRENT_WALLPAPER_INDEX != (len(files) - 1)):
 		next_media = mediafile.MediaFile(files[CURRENT_WALLPAPER_INDEX + 1])
 		next_image_name = f"[ {next_media.name} ]"
@@ -117,7 +119,7 @@ def render():
 	available_height -= image_render()
 	available_height -= info_render()
 
-	print((available_height - 1 - offset) * "\n", end="") 
+	print((available_height - 1 - offset) * "\n", end="")
 
 def set_wallpaper():
     os.system("killall waybar")
@@ -126,40 +128,54 @@ def set_wallpaper():
 
     files = get_wallpapers()
 
-    file = files[CURRENT_WALLPAPER_INDEX]
-    extension = file[file.rfind(".") + 1:]
+    file = mediafile.MediaFile(files[CURRENT_WALLPAPER_INDEX])
+
+    extension = file.full_path[file.full_path.rfind(".") + 1:]
 
     if (extension == "mp4") or (extension == "mkv") or (extension == "gif"):
         d = float(subprocess.check_output([
             "ffprobe","-v","error",
             "-show_entries","format=duration",
-            "-of","default=noprint_wrappers=1:nokey=1", file
+            "-of","default=noprint_wrappers=1:nokey=1", file.full_path
         ], stderr=subprocess.DEVNULL).strip())
 
-        file_name = file[file.rfind("//"):]
+        file_name = file.full_path[file.full_path.rfind("//"):]
 
         ts = f"{random.random() * d:.2f}"  # точка со случайной секундой
-        ts_process = subprocess.run(["ffmpeg", "-ss", ts, "-i", file, "-frames:v", "1", "-q:v", "2", "-pix_fmt", "yuvj420p", "-threads", "1", "temp.jpg"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        ts_process = subprocess.run(["ffmpeg", "-ss", ts, "-i", file.full_path, "-frames:v", "1", "-q:v", "2", "-pix_fmt", "yuvj420p", "-threads", "1", "temp.jpg"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
-        width = round(lines * UI_SCALE_COEFFICIENT)
-        height = round(width / 16 * 9)
+        image_width = round(os.get_terminal_size().columns * UI_SCALE_FACTOR)
+        image_height = round(os.get_terminal_size().lines * UI_SCALE_FACTOR)
 
-        start = f"chafa \"temp.jpg\" --size {width}x{height} --align center"
+        start = f"chafa \"temp.jpg\" --size {image_width}x{image_height} --align center"
         os.system(start)
 
-    os.system(f"wal -i {files[CURRENT_WALLPAPER_INDEX]}")
-    os.system(f"matugen image {files[CURRENT_WALLPAPER_INDEX]}")
-    
-    opaciter.process_file("/home/alex/.config/waybar/colors.css")
+    if shutil.which("wal") is not None:
+        os.system(f"wal -i {files[CURRENT_WALLPAPER_INDEX]}")
+    else:
+        print("wal is not found.")
 
-    subprocess.Popen(["wal-telegram", "--wal", "-g", "-r"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if shutil.which("matugen") is not None:
+        os.system(f"matugen image {files[CURRENT_WALLPAPER_INDEX]}")
+        opaciter.process_file(WAYBAR_COLORS_PATH)
+    else:
+        print("matugen is not found.")
 
-    s = f'mpvpaper "*" -o "vf-add=fps=12:round=near no-audio loop fullscreen no-border video-unscaled=no vf=lavfi=[scale=w=1920:h=1080:force_original_aspect_ratio=increase,crop=1920:1080]" {files[CURRENT_WALLPAPER_INDEX]}'
-    subprocess.Popen([s], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.Popen([f"waybar"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if shutil.which("wal-telegram") is not None:
+        subprocess.Popen(["wal-telegram", "--wal", "-g", "-r"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        print("wal-telegram is not found.")
 
-    with open("/home/alex/.config/hypr/modus_percae", "w") as f:
-        f.write("exec-once = wal -R\n" + "exec-once = " + s)
+    mpvpaper = f'mpvpaper "*" -o "vf-add=fps=12:round=near no-audio loop fullscreen no-border video-unscaled=no vf=lavfi=[scale=w=1920:h=1080:force_original_aspect_ratio=increase,crop=1920:1080]" {files[CURRENT_WALLPAPER_INDEX]}'
+    subprocess.Popen([mpvpaper], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    if shutil.which("waybar") is not None:
+        subprocess.Popen([f"waybar"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+    	print("waybar is not found.")
+
+    with open("/home/alex/.config/hypr/modus_percae", "w") as file:
+        file.write("exec-once = wal -R\n" + "exec-once = " + mpvpaper)
 
     if os.path.isfile("temp.jpg"):
         os.remove("temp.jpg")
