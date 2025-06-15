@@ -1,5 +1,6 @@
 {
 	"wallpaper_path": "/home/alex/Pictures/wallpapers",
+	"config_path": "/home/alex/Pictures/wallpapers/config.json",
 	"waybar_colors_path": "/home/alex/.config/waybar/colors.css",
 	"_wallpaper_path": "/path/to/wallpaper/folder",
 	"_waybar_colors_path": "/path/to/waybar/colors.css",

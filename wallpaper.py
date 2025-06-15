@@ -25,7 +25,9 @@ def get_wallpapers():
 def load_config():
 	global WALLPAPER_PATH, DEBUG, PREFERED_FETCH_TOOL, UI_SCALE_FACTOR, WAYBAR_COLORS_PATH
 
-	configObject = json.load(open("config.json", "r"))
+	#configObject = json.load(open(f"{os.path.realpath(__file__)[:os.path.realpath(__file__).rfind("/")]}/config.json", "r"))
+	configObject = json.load(open(f'{os.path.realpath(__file__)[:os.path.realpath(__file__).rfind("/") ]}/config.json', "r"))
+
 
 	WALLPAPER_PATH = configObject["wallpaper_path"]
 	DEBUG = configObject["debug"]
@@ -34,7 +36,7 @@ def load_config():
 	WAYBAR_COLORS_PATH = configObject["waybar_colors_path"]
 
 def stuff_info_render():
-	print(colorama.Style.DIM + f"Jānus v2 ({hex(6825)[2:]})".center(os.get_terminal_size().columns) + colorama.Style.NORMAL)
+	print(colorama.Style.DIM + f"Jānus v2 ({hex(61525)[2:]})".center(os.get_terminal_size().columns) + colorama.Style.NORMAL)
 
 	return 1
 
@@ -99,6 +101,8 @@ def info_render():
 	if (CURRENT_WALLPAPER_INDEX != 0):
 		previous_media = mediafile.MediaFile(files[CURRENT_WALLPAPER_INDEX - 1])
 		previous_image_name = f"[ {previous_media.name} ]"
+
+	#info = f"\n{previous_image_name.center(os.get_terminal_size().columns)[:-14] + "q  " + colorama.Style.NORMAL}\n{current_image_name.center(os.get_terminal_size().columns)[:-14] + "w 󰆓 " + colorama.Style.NORMAL}\n{next_image_name.center(os.get_terminal_size().columns)[:-14] + "e  " + colorama.Style.NORMAL}\n{"x 󰗽   ".rjust(os.get_terminal_size().columns)}"
 
 	print()
 	print(previous_image_name.center(os.get_terminal_size().columns)[:-14] + "q  " + colorama.Style.NORMAL)
