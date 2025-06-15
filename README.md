@@ -1,6 +1,8 @@
 # Jānus v2
 A program to change wallpaper, that use mpvpaper.
 
+![Jānus v2](https://raw.githubusercontent.com/TimeBean/janus_wallpaper/refs/heads/main/screenshot.png)
+
 # What can Jānus do?
 Set photo and video as wallpaper and extract color via matugen and pywal.
 
